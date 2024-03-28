@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculated Route</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f7f7f7;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        .stop {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .stop h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .stop p {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .stop p strong {
+            font-weight: bold;
+            color: #333;
+        }
+        .back-home {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #e2f0ff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .back-home h2 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .back-home p {
+            font-size: 18px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculated Route</h1>
+
+        {% for stop in route.stops %}
+        <div class="stop">
+            <h2>Stop #{{ loop.index }}</h2>
+            <p><strong>Name:</strong> {{ stop.name }}</p>
+            <p><strong>Time of Arrival:</strong> {{ stop.eta }}</p>
+        </div>
+        {% endfor %}
+
+        <div class="back-home">
+            <h2>Back HOME!</h2>
+            <p>ETA: {{ route.eta_back_home }}</p>
+        </div>
+        <!-- Button to go back to the main page -->
+        <div class="mt-8 text-center">
+            <a href="/" class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Create Another Route
+            </a>
+        </div>
+    </div>
+</body>
+</html>

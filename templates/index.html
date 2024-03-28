@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f7f7f7;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="time"] {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button {
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007aff;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pinche's Route Scheduler</h1>
+        <form id="routeForm">
+            <div class="mb-6">
+                <h2>Stop #1</h2>
+                <div class="mb-4">
+                    <label for="stop1Name" class="block mb-2">Name:</label>
+                    <input type="text" id="stop1Name" name="stop1Name" required>
+                </div>
+                <div class="mb-4">
+                    <label for="stop1Arrival" class="block mb-2">Time of Arrival:</label>
+                    <input type="time" id="stop1Arrival" name="stop1Arrival" value="09:00" required>
+                </div>
+                <div class="mb-4">
+                    <label for="stop1Duration" class="block mb-2">Work Duration (minutes):</label>
+                    <input type="number" id="stop1Duration" name="stop1Duration" required>
+                </div>
+                <div>
+                    <label for="stop1Travel" class="block mb-2">Travel Time to next stop (minutes):</label>
+                    <input type="number" id="stop1Travel" name="stop1Travel" value="15" required>
+                </div>
+            </div>
+
+            <div id="stop2" class="mb-6">
+                <h2>Stop #2</h2>
+                <div class="mb-4">
+                    <label for="stop2Name" class="block mb-2">Name:</label>
+                    <input type="text" id="stop2Name" name="stop2Name" required>
+                </div>
+                <div class="mb-4">
+                    <label for="stop2Duration" class="block mb-2">Work Duration (minutes):</label>
+                    <input type="number" id="stop2Duration" name="stop2Duration" required>
+                </div>
+                <div>
+                    <label for="stop2Travel" class="block mb-2">Travel Time back HOME!</label>
+                    <input type="number" id="stop2Travel" name="stop2Travel" value="15" required>
+                </div>
+            </div>
+
+            <div id="additionalStops"></div>
+
+            <button type="button" id="addStop" class="btn-success">Add Stop</button>
+
+            <div class="mt-8">
+                <button type="submit" class="btn-primary">Calculate Route</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let stopCount = 2;
+
+        document.getElementById('addStop').addEventListener('click', function() {
+            const previousStopDiv = document.getElementById(`stop${stopCount}`);
+            const previousTravelTimeLabel = previousStopDiv.querySelector(`label[for="stop${stopCount}Travel"]`);
+            previousTravelTimeLabel.textContent = 'Travel Time to next stop (minutes):';
+
+            stopCount++;
+            const stopDiv = document.createElement('div');
+            stopDiv.className = 'mb-6';
+            stopDiv.id = `stop${stopCount}`;
+            stopDiv.innerHTML = `
+                <h2>Stop #${stopCount}</h2>
+                <div class="mb-4">
+                    <label for="stop${stopCount}Name" class="block mb-2">Name:</label>
+                    <input type="text" id="stop${stopCount}Name" name="stop${stopCount}Name" required>
+                </div>
+                <div class="mb-4">
+                    <label for="stop${stopCount}Duration" class="block mb-2">Work Duration (minutes):</label>
+                    <input type="number" id="stop${stopCount}Duration" name="stop${stopCount}Duration" required>
+                </div>
+                <div class="mb-4">
+                    <label for="stop${stopCount}Travel" class="block mb-2">Travel Time back HOME!</label>
+                    <input type="number" id="stop${stopCount}Travel" name="stop${stopCount}Travel" value="15" required>
+                </div>
+                <button type="button" class="delete-btn" onclick="deleteStop(${stopCount})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            document.getElementById('additionalStops').appendChild(stopDiv);
+        });
+
+        function deleteStop(stopNumber) {
+            const stopDiv = document.getElementById(`stop${stopNumber}`);
+            stopDiv.remove();
+
+            // Update the stop numbers for the remaining stops
+            const remainingStops = document.querySelectorAll('#additionalStops > div');
+            remainingStops.forEach((stop, index) => {
+                const stopNum = index + 3;
+                stop.id = `stop${stopNum}`;
+                stop.querySelector('h2').textContent = `Stop #${stopNum}`;
+                stop.querySelector('input[type="text"]').id = `stop${stopNum}Name`;
+                stop.querySelector('input[type="text"]').name = `stop${stopNum}Name`;
+                stop.querySelector('input[type="number"]:nth-of-type(1)').id = `stop${stopNum}Duration`;
+                stop.querySelector('input[type="number"]:nth-of-type(1)').name = `stop${stopNum}Duration`;
+                stop.querySelector('input[type="number"]:nth-of-type(2)').id = `stop${stopNum}Travel`;
+                stop.querySelector('input[type="number"]:nth-of-type(2)').name = `stop${stopNum}Travel`;
+                stop.querySelector('.delete-btn').setAttribute('onclick', `deleteStop(${stopNum})`);
+            });
+
+            stopCount--;
+
+            // Update the travel time label for the new last stop
+            const lastStopDiv = document.getElementById(`stop${stopCount}`);
+            const lastTravelTimeLabel = lastStopDiv.querySelector(`label[for="stop${stopCount}Travel"]`);
+            lastTravelTimeLabel.textContent = 'Travel Time back HOME!';
+        }
+
+document.getElementById('routeForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('routeForm');
+    const formData = new FormData(form);
+    formData.append('num_stops', stopCount); // Dynamically add the number of stops
+
+    // Convert FormData to a URLSearchParams object to send as form data
+    const searchParams = new URLSearchParams(formData);
+
+    fetch('/calculate', {
+        method: 'POST',
+        body: searchParams, // Send the form data as URL-encoded
+    }).then(response => {
+        if (response.redirected) {
+            window.location.href = response.url; // Redirect the user to the response URL
+        }
+    }).catch(error => console.error('Error:', error));
+});
+
+    </script>
+</body>
+</html>
